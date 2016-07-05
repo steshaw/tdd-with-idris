@@ -1,0 +1,3 @@
+* Type-Driven Development with Idris
+
+Here I'm working through the exercises in [[https://www.manning.com/books/type-driven-development-with-idris][Type-Driven Development with Idris]].
