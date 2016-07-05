@@ -23,7 +23,7 @@ multVecs xs ys = sum (zipWith (*) xs ys)
 
 mkRow : Num a => (x : Vect n a) -> (ys_trans : Vect p (Vect n a)) -> Vect p a
 mkRow x [] = []
-mkRow x (y :: xs) = multVecs x y :: mkRow y xs
+mkRow x (y :: xs) = multVecs x y :: mkRow x xs
 
 multMatrix_helper : Num a => (xs : Vect m (Vect n a)) -> (ys_trans : Vect p (Vect n a)) -> Vect m (Vect p a)
 multMatrix_helper [] ys_trans = []
