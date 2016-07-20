@@ -1,45 +1,47 @@
-data SnocList : List a -> Type where
-     Empty : SnocList []
-     Snoc : {xs : List a} -> {x : a} -> SnocList (xs ++ [x])
+import Data.Vect
 
-snocList : (xs : List a) -> SnocList xs
-snocList [] = Empty
-snocList (x :: xs) with (snocList xs)
-  snocList (x :: []) | Empty = Snoc {xs = []} {x = x}
-  snocList (x :: (ys ++ [y])) | Snoc = Snoc {xs = x :: ys} {x = y}
+import Data.List.Views
+import Data.Vect.Views
+import Data.Nat.Views
 
 {- 1 -}
 
-equalSuffix : DecEq a => List a -> List a -> List a
-equalSuffix xs ys with (snocList xs)
-  equalSuffix [] ys | Empty = []
-  equalSuffix (zs ++ [x]) ys | Snoc with (snocList ys)
-    equalSuffix (zs ++ [x]) [] | Snoc | Empty = []
-    equalSuffix (zs ++ [x]) (xs ++ [y]) | Snoc | Snoc with (decEq x y)
-      equalSuffix (zs ++ [x]) (xs ++ [x]) | Snoc | Snoc | (Yes Refl) = equalSuffix zs xs ++ [x]
-      equalSuffix (zs ++ [x]) (xs ++ [y]) | Snoc | Snoc | (No contra) = []
+total
+equalSuffix : Eq a => List a -> List a -> List a
+equalSuffix input1 input2 with (snocList input1)
+  equalSuffix [] input2 | Empty = []
+  equalSuffix (xs ++ [x]) input2 | (Snoc xsrec) with (snocList input2)
+    equalSuffix (xs ++ [x]) [] | (Snoc xsrec) | Empty = []
+    equalSuffix (xs ++ [x]) (ys ++ [y]) | (Snoc xsrec) | (Snoc ysrec) 
+         = if x == y 
+              then equalSuffix xs ys | xsrec | ysrec ++ [y]
+              else []
 
 {- 2 -}
 
-data TakeN : List a -> Type where
-     Fewer : TakeN xs
-     Exact : TakeN (n_xs ++ rest)
-
-takeN : (n : Nat) -> (xs : List a) -> TakeN xs
-takeN Z xs = Exact {n_xs = []}
-takeN (S k) [] = Fewer
-takeN (S k) (x :: xs) with (takeN k xs)
-  takeN (S k) (x :: xs) | Fewer = Fewer
-  takeN (S k) (x :: (n_xs ++ rest)) | Exact = Exact {n_xs = x :: n_xs}
-
-groupByN : (n : Nat) -> (xs : List a) -> List (List a)
-groupByN n xs with (takeN n xs)
-  groupByN n xs | Fewer = [xs]
-  groupByN n (n_xs ++ rest) | Exact = n_xs :: groupByN n rest
+total
+mergeSort : Ord a => Vect n a -> Vect n a
+mergeSort xs with (splitRec xs)
+  mergeSort [] | SplitRecNil = []
+  mergeSort [x] | SplitRecOne = [x]
+  mergeSort (ys ++ zs) | (SplitRecPair lrec rrec) 
+      = merge (mergeSort ys | lrec) (mergeSort zs | rrec)
 
 {- 3 -}
 
-halve : List a -> (List a, List a)
-halve xs with (takeN (length xs `div` 2) xs)
-  halve xs | Fewer = (xs, [])
-  halve (n_xs ++ rest) | Exact = (n_xs, rest)
+total
+toBinary : Nat -> String
+toBinary k with (halfRec k)
+  toBinary Z | HalfRecZ = ""
+  toBinary (n + n) | (HalfRecEven rec) = toBinary n | rec ++ "0"
+  toBinary (S (n + n)) | (HalfRecOdd rec) = toBinary n | rec ++ "1"
+
+{- 4 -}
+
+palindrome : Eq a => List a -> Bool
+palindrome input with (vList input)
+  palindrome [] | VNil = True
+  palindrome [x] | VOne = True
+  palindrome (x :: (xs ++ [y])) | (VCons rec) 
+      = x == y && palindrome xs
+

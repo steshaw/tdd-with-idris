@@ -55,7 +55,8 @@ game : GameState (S guesses) (S letters) -> IO Finished
 game {guesses} {letters} st
         = do (_ ** Letter letter) <- readGuess
              case processGuess letter st of
-                  Left l => do putStrLn "Wrong!"
+                  Left l => do putStrLn ("Wrong! " ++ show guesses ++
+                                         " guesses remaining")
                                case guesses of
                                     Z => pure (Lost l)
                                     S k => game l
@@ -65,5 +66,9 @@ game {guesses} {letters} st
                                      S k => game r
 
 main : IO ()
-main = do game {guesses=4} (MkGameState "" ['F', 'O'])
-          pure ()
+main = do result <- game {guesses=2} (MkGameState "Test" ['T', 'E', 'S'])
+          case result of
+               Lost (MkGameState word missing) =>
+                    putStrLn ("You lose. The word was " ++ word)
+               Won game =>
+                    putStrLn "You win!"

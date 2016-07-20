@@ -1,21 +1,25 @@
-
 data SnocList : List a -> Type where
      Empty : SnocList []
-     Snoc : (xs : List a) -> (x : a) -> SnocList (xs ++ [x])
+     Snoc : (rec : SnocList xs) -> SnocList (xs ++ [x])
 
+snocListHelp : SnocList input -> (xs : List a) -> SnocList (input ++ xs)
+snocListHelp {input} snoc [] = rewrite appendNilRightNeutral input in snoc
+snocListHelp {input} snoc (x :: xs)
+    = rewrite appendAssociative input [x] xs in snocListHelp (Snoc snoc) xs
+                                    
 snocList : (xs : List a) -> SnocList xs
-snocList [] = Empty
-snocList (x :: xs) with (snocList xs)
-  snocList (x :: []) | Empty = Snoc [] x
-  snocList (x :: (ys ++ [y])) | (Snoc ys y) = Snoc (x :: ys) y
+snocList xs = snocListHelp Empty xs
 
-describe_list_end : List Int -> String
-describe_list_end input with (snocList input)
-  describe_list_end [] | Empty = "Empty"
-  describe_list_end (xs ++ [x]) | (Snoc xs x)
-       = "Non-empty, initial portion = " ++ show xs
+my_reverse_help : (input : List a) -> SnocList input -> List a
+my_reverse_help [] Empty = []
+my_reverse_help (xs ++ [x]) (Snoc rec) = x :: my_reverse_help xs rec
+
+my_reverse1 : List a -> List a
+my_reverse1 input = my_reverse_help input (snocList input)
 
 my_reverse : List a -> List a
 my_reverse input with (snocList input)
   my_reverse [] | Empty = []
-  my_reverse (xs ++ [x]) | (Snoc xs x) = x :: my_reverse xs
+  my_reverse (xs ++ [x]) | (Snoc rec) = x :: my_reverse xs | rec
+
+
