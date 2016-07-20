@@ -15,34 +15,24 @@ readAndSave = do
   lines <- readToBlank
   putStr "Enter filename: "
   filename <- getLine
-  ff <- writeFile filename (unlines lines)
-  case ff of
-    Left fileError => putStrLn $ "File error: " ++ show fileError
-    Right () => putStrLn "Written."
+  Right () <- writeFile filename (unlines lines) | Left fileError =>
+    putStrLn ("File error: " ++ show fileError)
+  putStrLn "Written."
 
-fReadToEOF : File -> IO (n ** Vect n String)
-fReadToEOF file = do
-  eof <- fEOF file
-  if eof
-  then pure (_ ** [])
-  else do
-    es <- fGetLine file
-    case es of
-      (Left fileError) => do
-        putStrLn $ "File error: " ++ show fileError
-        pure (_ ** [])
-      (Right line) => do
-        (n ** lines) <- fReadToEOF file
-        pure $ (S n ** line :: lines)
+fReadLines : File -> IO (n ** Vect n String)
+fReadLines file = do
+  False <- fEOF file | True => pure (_ ** [])
+  Right line <- fGetLine file | Left fileError => do
+    putStrLn $ "File error: " ++ show fileError
+    pure (_ ** [])
+  (n ** lines) <- fReadLines file
+  pure $ (S n ** line :: lines)
 
 readVectFile : (filename : String) -> IO (n ** Vect n String)
 readVectFile filename = do
-  ef <- openFile filename Read
-  case ef of
-    (Left fileError) => do
-      putStrLn $ "File error: " ++ show fileError
-      pure (_ ** [])
-    (Right file) => do
-      lines <- fReadToEOF file
-      closeFile file
-      pure lines
+  Right file <- openFile filename Read | Left fileError => do
+    putStrLn $ "File error: " ++ show fileError
+    pure (_ ** [])
+  lines <- fReadLines file
+  closeFile file
+  pure lines
