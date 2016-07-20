@@ -50,13 +50,21 @@ case integerToFin id size of
 stringIntercalate : String -> List String -> String
 stringIntercalate sep ss = pack $ intercalate (unpack sep) (map unpack ss)
 
+toIndexedPairs : (idx : Nat) -> (items : Vect size String) -> List (Nat, String)
+toIndexedPairs idx [] = []
+toIndexedPairs idx (x :: xs) = (idx, x) :: toIndexedPairs (S idx) xs
+
 searchCommand : (str : String) -> (store : DataStore) -> Maybe (String, DataStore)
 searchCommand str store@(MkData size items) = Just (result, store)
   where
-    results : List String
-    results = filter (isInfixOf str) (toList items)
+    results : List (Nat, String)
+    results = filter (isInfixOf str . snd) (toIndexedPairs 0 items)
+    results' : List String
+    results' = map showIt results
+      where
+        showIt (idx, item) = (show idx) ++ " : " ++ item
     result : String
-    result = stringIntercalate ", " results ++ "\n"
+    result = stringIntercalate ", " results' ++ "\n"
 
 processInput : DataStore -> String -> Maybe (String, DataStore)
 processInput store input =
