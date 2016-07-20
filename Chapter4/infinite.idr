@@ -1,0 +1,1 @@
+data Infinite = Forever Infinite
