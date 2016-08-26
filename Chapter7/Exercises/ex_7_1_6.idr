@@ -21,3 +21,7 @@ Eq Shape where
 
 Ord Shape where
     compare x y = compare (area x) (area y)
+
+testShapes : List Shape
+testShapes = [Circle 3, Triangle 3 9, Rectangle 2 6, Circle 4, 
+              Rectangle 2 7]

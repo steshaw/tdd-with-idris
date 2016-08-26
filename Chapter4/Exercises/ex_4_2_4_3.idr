@@ -6,6 +6,6 @@ data Vect : Nat -> Type -> Type where
 
 {- 3 and 4-}
 
-take : (n : Nat) -> Vect (n + m) a -> Vect n a
-take Z xs = []
-take (S k) (x :: xs) = x :: take k xs
+vectTake : (n : Nat) -> Vect (n + m) a -> Vect n a
+vectTake Z xs = []
+vectTake (S k) (x :: xs) = x :: vectTake k xs

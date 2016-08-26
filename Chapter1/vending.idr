@@ -1,4 +1,4 @@
-Machine : Nat -> Nat -> Type
+data Machine : Nat -> Nat -> Type
 
 init       : Machine 0 0
 insertCoin : Machine pounds (1 + chocs) ->

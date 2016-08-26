@@ -17,6 +17,14 @@ data Picture = Primitive Shape
              | Rotate Double Picture
              | Translate Double Double Picture
 
+testPic1 : Picture
+testPic1 = Combine (Primitive (Triangle 2 3)) 
+                   (Primitive (Triangle 2 4))
+
+testPic2 : Picture
+testPic2 = Combine (Primitive (Rectangle 1 3)) 
+                   (Primitive (Circle 4))
+
 data Tree elem = Empty
                | Node (Tree elem) elem (Tree elem)
 
