@@ -1,28 +1,36 @@
-data Format = Number Format
-            | Str Format
-            | Lit String Format
+data Format = IntF Format
+            | DoubleF Format
+            | CharF Format
+            | StringF Format
+            | Literal String Format
             | End
 
 PrintfType : Format -> Type
-PrintfType (Number fmt) = (i : Int) -> PrintfType fmt
-PrintfType (Str fmt) = (s : String) -> PrintfType fmt
-PrintfType (Lit str fmt) = PrintfType fmt
+PrintfType (IntF fmt) = (i : Int) -> PrintfType fmt
+PrintfType (DoubleF fmt) = (d : Double) -> PrintfType fmt
+PrintfType (CharF fmt) = (c : Char) -> PrintfType fmt
+PrintfType (StringF fmt) = (s : String) -> PrintfType fmt
+PrintfType (Literal str fmt) = PrintfType fmt
 PrintfType End = String
 
 printfFmt : (fmt : Format) -> (acc : String) -> PrintfType fmt
-printfFmt (Number fmt) acc = \i => printfFmt fmt (acc ++ show i)
-printfFmt (Str fmt) acc = \str => printfFmt fmt (acc ++ str)
-printfFmt (Lit str fmt) acc = printfFmt fmt (acc ++ str)
+printfFmt (IntF fmt) acc = \i => printfFmt fmt (acc ++ show i)
+printfFmt (DoubleF fmt) acc = \d => printfFmt fmt (acc ++ show d)
+printfFmt (CharF fmt) acc = \c => printfFmt fmt (acc ++ show c)
+printfFmt (StringF fmt) acc = \str => printfFmt fmt (acc ++ str)
+printfFmt (Literal str fmt) acc = printfFmt fmt (acc ++ str)
 printfFmt End acc = acc
 
 toFormat : (xs : List Char) -> Format
 toFormat [] = End
-toFormat ('%' :: 'd' :: chars) = Number (toFormat chars)
-toFormat ('%' :: 's' :: chars) = Str (toFormat chars)
-toFormat ('%' :: chars) = Lit "%" (toFormat chars)
+toFormat ('%' :: 'd' :: chars) = IntF (toFormat chars)
+toFormat ('%' :: 'f' :: chars) = DoubleF (toFormat chars)
+toFormat ('%' :: 'c' :: chars) = CharF (toFormat chars)
+toFormat ('%' :: 's' :: chars) = StringF (toFormat chars)
+toFormat ('%' :: chars) = Literal "%" (toFormat chars)
 toFormat (c :: chars) = case toFormat chars of
-                          Lit lit fmt => Lit (strCons c lit) fmt
-                          fmt => Lit (strCons c "") fmt
+                          Literal lit fmt => Literal (strCons c lit) fmt
+                          fmt => Literal (strCons c "") fmt
 
 printf : (fmt : String) -> PrintfType (toFormat (unpack fmt))
 printf fmt = printfFmt _ ""
