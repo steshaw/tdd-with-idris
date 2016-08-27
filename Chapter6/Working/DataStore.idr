@@ -35,14 +35,12 @@ data Command : Schema -> Type where
 parseSchema : List String -> Maybe Schema
 parseSchema ("String" :: xs) = case xs of
                                     [] => Just SString
-                                    _  => case parseSchema xs of
-                                               Nothing => Nothing
-                                               Just schemaR => Just (SString .+. schemaR)
+                                    _  => do schemaR <- parseSchema xs
+                                             pure $ SString .+. schemaR
 parseSchema ("Int" :: xs) = case xs of
                                  [] => Just SInt
-                                 _  => case parseSchema xs of
-                                            Nothing => Nothing
-                                            Just schemaR => Just (SInt .+. schemaR)
+                                 _  => do schemaR <- parseSchema xs
+                                          pure $ SInt .+. schemaR
 parseSchema _ = Nothing
 
 parsePrefix : (schema : Schema) -> String -> Maybe (SchemaType schema, String)
@@ -56,13 +54,10 @@ parsePrefix SString input = getQuoted (unpack input)
 parsePrefix SInt input = case span isDigit input of
                            ("", rest)  => Nothing
                            (num, rest) => Just (cast num, ltrim rest)
-parsePrefix (schemaL .+. schemaR) input =
-  case parsePrefix schemaL input of
-    Nothing => Nothing
-    Just (lVal, rest) =>
-      case parsePrefix schemaR rest of
-        Nothing => Nothing
-        Just (rVal, rest') => Just ((lVal, rVal), rest')
+parsePrefix (schemaL .+. schemaR) input = do
+  (lVal, rest) <- parsePrefix schemaL input
+  (rVal, rest') <- parsePrefix schemaR rest
+  pure ((lVal, rVal), rest')
 
 parseBySchema : (schema : Schema) -> String -> Maybe (SchemaType schema)
 parseBySchema schema input = 
@@ -72,17 +67,15 @@ parseBySchema schema input =
     Nothing        => Nothing
 
 parseCommand : (schema : Schema) -> (cmd : String) -> (args : String) -> Maybe (Command schema)
-parseCommand schema "schema" str = case parseSchema (words str) of
-                                        Nothing => Nothing
-                                        Just schemaOk => Just (SetSchema schemaOk)
-parseCommand schema "add" str = case parseBySchema schema str of
-                                  Nothing => Nothing
-                                  Just item => Just (Add item)
-parseCommand schema "get" val = case all isDigit (unpack val) of
-                                  False => Nothing
-                                  True => Just (Get (cast val))
-parseCommand schema "quit" "" = Just Quit
-parseCommand _ _ _ = Nothing
+parseCommand schema "schema" str = do schemaOk <- parseSchema (words str)
+                                      pure $ SetSchema schemaOk
+parseCommand schema "add" str    = do item <- parseBySchema schema str
+                                      pure $ Add item
+parseCommand schema "get" val    = case all isDigit (unpack val) of
+                                        False => Nothing
+                                        True => Just (Get (cast val))
+parseCommand schema "quit" ""    = Just Quit
+parseCommand _ _ _               = Nothing
 
 parse : (schema : Schema) -> (input : String) -> Maybe (Command schema)
 parse schema input = case span (/= ' ') input of
