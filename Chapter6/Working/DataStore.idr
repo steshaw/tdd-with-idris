@@ -37,21 +37,20 @@ data Command : Schema -> Type where
   GetAll    : Command schema
   Quit      : Command schema
 
-total
-parseSchema : List String -> Maybe Schema
-parseSchema ("String" :: xs) = case xs of
-                                    [] => Just SString
-                                    _  => do schemaR <- parseSchema xs
-                                             pure $ SString .+. schemaR
-parseSchema ("Char" :: xs) = case xs of
-                                    [] => Just SChar
-                                    _  => do schemaR <- parseSchema xs
-                                             pure $ SChar .+. schemaR
-parseSchema ("Int" :: xs) = case xs of
-                                 [] => Just SInt
-                                 _  => do schemaR <- parseSchema xs
-                                          pure $ SInt .+. schemaR
-parseSchema _ = Nothing
+mutual
+  total
+  parseSchema : List String -> Maybe Schema
+  parseSchema ("String" :: xs) = parseRest SString xs
+  parseSchema ("Char" :: xs)   = parseRest SChar xs
+  parseSchema ("Int" :: xs)    = parseRest SInt xs
+  parseSchema _                = Nothing
+
+  total
+  parseRest : Schema -> List String -> Maybe Schema
+  parseRest schema xs = case xs of
+                             [] => Just schema
+                             _  => do schemaR <- parseSchema xs
+                                      pure $ schema .+. schemaR
 
 total
 parsePrefix : (schema : Schema) -> String -> Maybe (SchemaType schema, String)
