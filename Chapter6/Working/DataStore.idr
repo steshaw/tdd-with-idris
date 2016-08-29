@@ -122,15 +122,12 @@ setSchema store schema = case size store of
                               S k => Nothing
 
 total
-zipWithIndex : List a -> List (Nat, a)
-zipWithIndex l = zip [0 .. length l] l
-
-total
 getAll : (store : DataStore) -> String
-getAll store = concatMap f $ zipWithIndex (toList (items store))
+getAll store = concatMap (\(id, item) => show id ++ ": " ++ display item ++ "\n") $
+                 zipWithIndex (toList (items store))
   where
-    f : (Nat, SchemaType (schema store)) -> String
-    f (id, item) = show id ++ ": " ++ display item ++ "\n"
+    zipWithIndex : List a -> List (Nat, a)
+    zipWithIndex l = zip [0 .. length l] l
 
 total
 processInput : DataStore -> String -> Maybe (String, DataStore)
