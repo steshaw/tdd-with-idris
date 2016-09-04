@@ -20,8 +20,8 @@ data GameState : (guessesRemaining : Nat) -> (letters : Nat) -> Type where
                 GameState guessesRemaining letters
 
 data Finished : Type where
-  Lost : (game : GameState 0 (S letters)) -> Finished
-  Won  : (game : GameState (S guesses) 0) -> Finished
+  Lost : (game : GameState Z (S letters)) -> Finished
+  Won  : (game : GameState (S guesses) Z) -> Finished
 
 data ValidInput : List Char -> Type where
   Letter : (c : Char) -> ValidInput [c]
@@ -42,7 +42,7 @@ isValidString s = isValidInput (unpack s)
 
 readGuess : IO (x ** ValidInput x)
 readGuess = do
-  putStr "Guess: "
+  putStr "Player 2. Enter a guess: "
   s <- getLine
   case isValidString (toUpper s) of
        Yes prf => pure (_ ** prf)
@@ -58,8 +58,93 @@ processGuess letter (MkGameState word missing) =
     Yes prf   => Right (MkGameState word (removeElem letter missing))
     No contra => Left (MkGameState word missing)
 
+dashes : (st : GameState (S guesses) (S letters)) -> String
+dashes (MkGameState word missing) =
+  pack $ intersperse ' ' $ map dashEm (unpack word)
+  where
+    dashEm : Char -> Char
+    dashEm c = case Data.Vect.find (== (toUpper c)) missing of
+                    Nothing => c
+                    Just _  => '_'
+
+hangman : Nat -> String
+hangman (S (S (S (S (S (S Z)))))) = """
+  +---------+
+  |         |
+  |
+  |
+  |
+  |
+  |
+--+--
+"""
+hangman (S (S (S (S (S Z))))) = """
+  +---------+
+  |         |
+  |         O
+  |
+  |
+  |
+  |
+-----
+"""
+hangman (S (S (S (S Z)))) = """
+  +---------+
+  |         |
+  |         O
+  |         |
+  |
+  |
+  |
+--+--
+"""
+hangman (S (S (S Z))) = """
+  +---------+
+  |         |
+  |         O
+  |        /|
+  |
+  |
+  |
+--+--
+"""
+hangman (S (S Z)) = """
+  +---------+
+  |         |
+  |         O
+  |        /|\
+  |
+  |
+  |
+--+--
+"""
+hangman (S Z) = """
+  +---------+
+  |         |
+  |         O
+  |        /|\
+  |        /
+  |
+  |
+--+--
+"""
+hangman Z = """
+  +---------+
+  |         |
+  |         O
+  |        /|\
+  |        / \
+  |
+  |
+--+--
+"""
+
 game : GameState (S guesses) (S letters) -> IO Finished
 game st {guesses} {letters} = do
+  putStrLn (hangman (S guesses))
+  putStrLn ""
+  putStrLn (dashes st)
+  putStrLn ""
   (_ ** Letter letter) <- readGuess
   case processGuess letter st of
        Left l => do putStrLn "Wrong!"
@@ -76,13 +161,26 @@ isWord s = all isAlpha (unpack s)
 
 main : IO ()
 main = do
-  putStr "Enter word: "
+  putStr "Player 1. Enter your word: "
   word <- getLine
   if isWord word then pure () else do {putStrLn "Invalid word"; main}
   let missing = nub (sort (unpack (toUpper word)))
   case missing of
        [] => do {putStrLn "Invalid word"; main}
-       (c :: cs) => do result <- game {guesses = 5} (MkGameState word (c :: fromList cs))
+       (c :: cs) => do putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       putStr "\n\n\n\n\n\n\n\n\n\n"
+                       result <- game {guesses = 5} (MkGameState word (c :: fromList cs))
                        case result of
-                            Lost (MkGameState word missing) => putStrLn $ "You lose! The word was '" ++ word ++ "'"
+                            Lost (MkGameState word missing) => do putStrLn $ hangman Z
+                                                                  putStrLn $ "You lose! The word was '" ++ word ++ "'"
                             Won (MkGameState word missing)  => putStrLn $ "You win! The word was '" ++ word ++ "'"
