@@ -71,9 +71,18 @@ game st {guesses} {letters} = do
                           Z => pure (Won r)
                           S k => game r
 
+isWord : String -> Bool
+isWord s = all isAlpha (unpack s)
+
 main : IO ()
 main = do
-  result <- game {guesses=2} (MkGameState "Test" ['T', 'E', 'S'])
-  case result of
-       Lost (MkGameState word missing) => putStrLn $ "You lose! The word was '" ++ word ++ "'"
-       Won (MkGameState word missing)  => putStrLn $ "You win! The word was '" ++ word ++ "'"
+  putStr "Enter word: "
+  word <- getLine
+  if isWord word then pure () else do {putStrLn "Invalid word"; main}
+  let missing = nub (sort (unpack (toUpper word)))
+  case missing of
+       [] => do {putStrLn "Invalid word"; main}
+       (c :: cs) => do result <- game {guesses = 5} (MkGameState word (c :: fromList cs))
+                       case result of
+                            Lost (MkGameState word missing) => putStrLn $ "You lose! The word was '" ++ word ++ "'"
+                            Won (MkGameState word missing)  => putStrLn $ "You win! The word was '" ++ word ++ "'"
