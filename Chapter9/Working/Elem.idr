@@ -3,6 +3,10 @@ import Data.Vect
 oneInVector : Elem 1 [1,2,3]
 oneInVector = Here
 
+notThere : Elem 4 [1,2,3] -> Void
+notThere (There (There (There Here))) impossible
+notThere (There (There (There (There _)))) impossible
+
 maryInVector : Elem "Mary" ["Peter", "Paul", "Mary"]
 maryInVector = There $ There Here
 
