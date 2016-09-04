@@ -167,18 +167,7 @@ main = do
   let missing = nub (sort (unpack (toUpper word)))
   case missing of
        [] => do {putStrLn "Invalid word"; main}
-       (c :: cs) => do putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
-                       putStr "\n\n\n\n\n\n\n\n\n\n"
+       (c :: cs) => do putStr $ concat $ take 100 $ repeat "\n"
                        result <- game {guesses = 5} (MkGameState word (c :: fromList cs))
                        case result of
                             Lost (MkGameState word missing) => do putStrLn $ hangman Z
