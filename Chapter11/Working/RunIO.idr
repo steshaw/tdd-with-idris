@@ -11,7 +11,7 @@ public export
 (>>=) : IO a -> (a -> Inf (RunIO b)) -> RunIO b
 (>>=) = Do
 
-export
+public export
 data Fuel = Dry | More (Lazy Fuel)
 
 export partial
