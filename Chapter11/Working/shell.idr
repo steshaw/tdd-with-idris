@@ -23,6 +23,7 @@ readShellCommand prompt = do
   case ws of
        ["cat", f] => pure $ Cat f
        ["copy", src, dest] => pure $ Copy src dest
+       ["cp",   src, dest] => pure $ Copy src dest
        ["exit"] => pure Exit
        []       => pure Empty
        _        => pure $ BadCommand s
