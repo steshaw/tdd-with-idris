@@ -16,3 +16,10 @@ describeListEnd : List Int -> String
 describeListEnd input with (listLast input)
   describeListEnd [] | Empty = "Empty"
   describeListEnd (init ++ [x]) | (NonEmpty init x) = "Non-empty, initial portion = " ++ show init
+
+-- XXX: Very inefficient (many traversals of `xs`).
+-- XXX: Cannot be tagged as `total`.
+myReverse : List a -> List a
+myReverse xs with (listLast xs)
+  myReverse [] | Empty = []
+  myReverse (init ++ [x]) | (NonEmpty init x) = x :: myReverse init
