@@ -41,3 +41,13 @@ toBinary n@(S k) = toBinary' n
       toBinary' Z | HalfRecZ = ""
       toBinary' (x + x) | (HalfRecEven rec) = toBinary' x | rec ++ "0"
       toBinary' (S (x + x)) | (HalfRecOdd rec) = toBinary' x | rec ++ "1"
+
+-- 4.
+
+total
+palindrome : Eq a => List a -> Bool
+palindrome xs with (vList xs)
+  palindrome [] | VNil = True
+  palindrome [x] | VOne = True
+  palindrome (x :: (ys ++ [y])) | (VCons rec) =
+    (x == y) && palindrome ys | rec
