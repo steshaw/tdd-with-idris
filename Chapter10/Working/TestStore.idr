@@ -22,3 +22,8 @@ filterKeys test store with (storeView store)
     if test value
        then key :: filterKeys test store | rec
        else filterKeys test store | rec
+
+getValues : DataStore (SString .+. valSchema) -> List (SchemaType valSchema)
+getValues store with (storeView store)
+  getValues store | SNil = []
+  getValues (addToStore (key, value) store) | (SAdd rec) = value :: getValues store | rec
